@@ -10,10 +10,10 @@ Web pencatatan inventaris (tambah, lihat, ubah, hapus) untuk dipasang di Vercel.
 |---|---|
 | `BTG/INV` | Awalan tetap (ubah lewat env `KODE_PREFIX`) |
 | `24` | 2 digit tahun dari **tanggal input** (paling lama 2024) |
-| `001` | Nomor urut **berlanjut lintas tahun** (tidak reset). Contoh: `24/001`, `24/002`, `25/003`, `26/004` |
+| `001` | Nomor urut **lintas tahun** (tidak reset per tahun). Selalu memakai nomor terkecil yang kosong, jadi nomor dari barang yang dihapus dipakai lagi. Contoh: `24/001`, `24/002`, `25/003` |
 | `-1` | Nomor unit. Input "Jumlah unit" 5 → `-1` sampai `-5` |
 
-Kode dan tanggal input tidak bisa diubah setelah disimpan. Nomor yang sudah dihapus tidak dipakai ulang.
+Kode dan tanggal input tidak bisa diubah setelah disimpan. Hapus `002` dari urutan `001, 002, 003`, maka barang berikutnya memakai `002` lagi. Jika semua barang dihapus, penomoran kembali ke `001`.
 
 ## Pasang di Vercel
 

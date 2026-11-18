@@ -1,5 +1,5 @@
 'use strict';
-const { PREFIX, HASH, SEQ, send, redis, requireAuth, clean } = require('../lib/core');
+const { PREFIX, HASH, send, redis, requireAuth, clean } = require('../lib/core');
 
 function parseBody(req) {
   let b = req.body;
@@ -20,7 +20,7 @@ module.exports = async (req, res) => {
       return send(res, 200, { items });
     }
 
-    // CREATE — nomor urut berlanjut lintas tahun (tidak reset); 1 unit = 1 kode (-1, -2, ...)
+    // CREATE — nomor urut lintas tahun, nomor terhapus dipakai lagi; 1 unit = 1 kode (-1, -2, ...)
     if (req.method === 'POST') {
       const body = parseBody(req);
       const jumlah = body.jumlah == null || body.jumlah === '' ? 1 : Number(body.jumlah);
@@ -32,31 +32,36 @@ module.exports = async (req, res) => {
 
       const yy = data.tanggal.slice(2, 4); // tahun dari tanggal input
 
-      // Penghitung tunggal lintas tahun. Pertama kali dipakai, mulai dari nomor
-      // terbesar yang sudah ada agar tidak bentrok dengan data lama.
-      const [cur] = await redis([['GET', SEQ]]);
-      if (cur == null) {
+      // Nomor urut: ambil nomor terkecil yang belum dipakai (lintas tahun).
+      // Nomor dari barang yang sudah dihapus otomatis bisa dipakai lagi.
+      // Kunci sementara mencegah dua input bersamaan mengambil nomor yang sama.
+      const lock = 'inv:lock';
+      const [got] = await redis([['SET', lock, '1', 'NX', 'EX', '10']]);
+      if (!got) return send(res, 409, { error: 'Sedang memproses input lain, coba lagi sebentar' });
+      try {
         const [vals] = await redis([['HVALS', HASH]]);
-        let max = 0;
+        const used = new Set();
         for (const v of vals || []) {
-          try { max = Math.max(max, Number(JSON.parse(v).no) || 0); } catch {}
+          try { used.add(Number(JSON.parse(v).no) || 0); } catch {}
         }
-        await redis([['SETNX', SEQ, String(max)]]);
-      }
-      const [seq] = await redis([['INCR', SEQ]]);
-      const no = String(seq).padStart(3, '0'); // 001, 002, ... 1000 dst.
-      const now = new Date().toISOString();
+        let seq = 1;
+        while (used.has(seq)) seq++;
+        const no = String(seq).padStart(3, '0'); // 001, 002, ... 1000 dst.
+        const now = new Date().toISOString();
 
-      const args = ['HSET', HASH];
-      const created = [];
-      for (let u = 1; u <= jumlah; u++) {
-        const kode = `${PREFIX}/${yy}/${no}-${u}`;
-        const rec = { kode, ...data, tahun: yy, no: seq, unit: u, dibuat: now, diubah: now };
-        args.push(kode, JSON.stringify(rec));
-        created.push(rec);
+        const args = ['HSET', HASH];
+        const created = [];
+        for (let u = 1; u <= jumlah; u++) {
+          const kode = `${PREFIX}/${yy}/${no}-${u}`;
+          const rec = { kode, ...data, tahun: yy, no: seq, unit: u, dibuat: now, diubah: now };
+          args.push(kode, JSON.stringify(rec));
+          created.push(rec);
+        }
+        await redis([args]);
+        return send(res, 201, { items: created });
+      } finally {
+        await redis([['DEL', lock]]).catch(() => {});
       }
-      await redis([args]);
-      return send(res, 201, { items: created });
     }
 
     const kode = String((req.query && req.query.kode) || '');
