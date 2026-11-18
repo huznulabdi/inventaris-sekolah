@@ -1,5 +1,5 @@
 'use strict';
-const { PREFIX, HASH, send, redis, requireAuth, clean } = require('../lib/core');
+const { PREFIX, HASH, SEQ, send, redis, requireAuth, clean } = require('../lib/core');
 
 function parseBody(req) {
   let b = req.body;
@@ -20,7 +20,7 @@ module.exports = async (req, res) => {
       return send(res, 200, { items });
     }
 
-    // CREATE — nomor urut per tahun, otomatis berlanjut; 1 unit = 1 kode (-1, -2, ...)
+    // CREATE — nomor urut berlanjut lintas tahun (tidak reset); 1 unit = 1 kode (-1, -2, ...)
     if (req.method === 'POST') {
       const body = parseBody(req);
       const jumlah = body.jumlah == null || body.jumlah === '' ? 1 : Number(body.jumlah);
@@ -31,8 +31,20 @@ module.exports = async (req, res) => {
       if (error) return send(res, 400, { error });
 
       const yy = data.tanggal.slice(2, 4); // tahun dari tanggal input
-      const [seq] = await redis([['INCR', 'inv:seq:' + yy]]);
-      const no = String(seq).padStart(4, '0');
+
+      // Penghitung tunggal lintas tahun. Pertama kali dipakai, mulai dari nomor
+      // terbesar yang sudah ada agar tidak bentrok dengan data lama.
+      const [cur] = await redis([['GET', SEQ]]);
+      if (cur == null) {
+        const [vals] = await redis([['HVALS', HASH]]);
+        let max = 0;
+        for (const v of vals || []) {
+          try { max = Math.max(max, Number(JSON.parse(v).no) || 0); } catch {}
+        }
+        await redis([['SETNX', SEQ, String(max)]]);
+      }
+      const [seq] = await redis([['INCR', SEQ]]);
+      const no = String(seq).padStart(3, '0'); // 001, 002, ... 1000 dst.
       const now = new Date().toISOString();
 
       const args = ['HSET', HASH];

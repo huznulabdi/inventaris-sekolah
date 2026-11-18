@@ -4,13 +4,13 @@ Web pencatatan inventaris (tambah, lihat, ubah, hapus) untuk dipasang di Vercel.
 
 ## Format kode barang
 
-`BTG/INV/26/0001-1`
+`BTG/INV/24/001-1`
 
 | Bagian | Arti |
 |---|---|
 | `BTG/INV` | Awalan tetap (ubah lewat env `KODE_PREFIX`) |
-| `26` | 2 digit tahun dari **tanggal input** |
-| `0001` | Nomor urut per tahun, otomatis berlanjut. Tahun baru mulai lagi dari `0001` |
+| `24` | 2 digit tahun dari **tanggal input** (paling lama 2024) |
+| `001` | Nomor urut **berlanjut lintas tahun** (tidak reset). Contoh: `24/001`, `24/002`, `25/003`, `26/004` |
 | `-1` | Nomor unit. Input "Jumlah unit" 5 → `-1` sampai `-5` |
 
 Kode dan tanggal input tidak bisa diubah setelah disimpan. Nomor yang sudah dihapus tidak dipakai ulang.

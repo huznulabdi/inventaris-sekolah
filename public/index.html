@@ -206,7 +206,7 @@ dialog::backdrop{background:rgba(20,28,24,.45)}
     </div>
     <div class="dlg-b">
       <div class="full"><label for="f_nama">Nama barang *</label><input id="f_nama" name="nama" required maxlength="120"></div>
-      <div><label for="f_tanggal">Tanggal input *</label><input id="f_tanggal" name="tanggal" type="date" required></div>
+      <div><label for="f_tanggal">Tanggal input *</label><input id="f_tanggal" name="tanggal" type="date" min="2024-01-01" required></div>
       <div id="rowJumlah"><label for="f_jumlah">Jumlah unit</label><input id="f_jumlah" name="jumlah" type="number" min="1" max="200" step="1" value="1"></div>
       <div><label for="f_kategori">Kategori</label><input id="f_kategori" name="kategori" list="dlKategori" maxlength="60" placeholder="mis. Meja"><datalist id="dlKategori"></datalist></div>
       <div><label for="f_merek">Merek / spesifikasi</label><input id="f_merek" name="merek" maxlength="120"></div>
