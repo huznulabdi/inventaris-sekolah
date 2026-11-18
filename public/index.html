@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inventaris Barang Sekolah</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f6f4ee; --card:#fff; --ink:#1d2521; --mute:#6b736e; --line:#e3dfd3;
+  --accent:#0f6b5c; --accent-d:#0a4f44; --accent-s:#e2f0ec;
+  --ok:#2f7d4f; --ok-s:#e3f3e9; --warn:#a86a0c; --warn-s:#fbefd6; --bad:#b3402f; --bad-s:#fbe4df;
+  --r:12px;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',sans-serif}
+h1,h2,p{margin:0}
+button,input,select,textarea{font:inherit;color:inherit}
+.mono{font-family:'JetBrains Mono',ui-monospace,Menlo,monospace}
+
+/* tombol */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;border:1px solid var(--line);background:var(--card);border-radius:10px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .15s,border-color .15s}
+.btn:hover{background:#faf8f3;border-color:#cfc9b8}
+.btn:disabled{opacity:.55;cursor:default}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:var(--accent-d)}
+.btn.danger{background:var(--bad);border-color:var(--bad);color:#fff}
+.btn.danger:hover{background:#98352a}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--mute)}
+.btn.block{width:100%}
+.link{background:none;border:0;padding:4px 6px;font-weight:600;color:var(--accent);cursor:pointer;border-radius:6px}
+.link:hover{background:var(--accent-s)}
+.link.danger{color:var(--bad)}
+.link.danger:hover{background:var(--bad-s)}
+
+/* form */
+label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:10px;padding:9px 12px;outline:none;transition:border-color .15s,box-shadow .15s}
+input,select{height:40px}
+textarea{resize:vertical;min-height:72px}
+input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-s)}
+input:disabled{background:#f3f1ea;color:var(--mute)}
+.err{color:var(--bad);font-size:13px;min-height:18px}
+
+/* login */
+.login{min-height:100vh;display:grid;place-items:center;padding:24px}
+.login-card{width:100%;max-width:380px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:32px 28px;box-shadow:0 10px 40px rgba(29,37,33,.07)}
+.login-card h1{font-size:24px;letter-spacing:-.02em;margin:2px 0 22px}
+.eyebrow{font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+.mark{width:44px;height:44px;border-radius:12px;background:var(--accent);color:#fff;display:grid;place-items:center;margin-bottom:18px}
+.mark.sm{width:36px;height:36px;border-radius:10px;margin:0;flex:none}
+.login-card .err{margin:8px 0 10px}
+
+/* app */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 24px;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+.brand{display:flex;align-items:center;gap:12px;min-width:0}
+.brand b{display:block;font-size:15px;line-height:1.2}
+.brand span{font-size:12.5px;color:var(--mute)}
+main{max-width:1280px;margin:0 auto;padding:24px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px 18px;border-left:4px solid var(--accent)}
+.stat.ok{border-left-color:var(--ok)} .stat.warn{border-left-color:#d9962a} .stat.bad{border-left-color:var(--bad)}
+.stat span{display:block;font-size:12.5px;color:var(--mute);font-weight:600}
+.stat b{font-size:26px;letter-spacing:-.02em;line-height:1.25}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.toolbar input[type=search]{flex:1 1 240px;min-width:0}
+.toolbar select{width:auto;flex:0 0 auto}
+.spacer{flex:1 1 0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:980px}
+th{text-align:left;font-size:12px;letter-spacing:.04em;text-transform:uppercase;color:var(--mute);font-weight:700;padding:11px 14px;background:#faf8f3;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:11px 14px;border-bottom:1px solid #efece3;vertical-align:top}
+tbody tr:hover{background:#fcfbf7}
+tbody tr:last-child td{border-bottom:0}
+td small{display:block;color:var(--mute);font-size:12.5px;margin-top:2px;max-width:280px}
+td.kode{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;white-space:nowrap;color:var(--accent-d)}
+td.num,th.num{text-align:right;white-space:nowrap}
+td.act{white-space:nowrap;text-align:right}
+.badge{display:inline-block;padding:2px 10px;border-radius:99px;font-size:12px;font-weight:700;white-space:nowrap}
+.badge.ok{background:var(--ok-s);color:var(--ok)} .badge.warn{background:var(--warn-s);color:var(--warn)} .badge.bad{background:var(--bad-s);color:var(--bad)}
+.empty{padding:48px 20px;text-align:center;color:var(--mute)}
+.tfoot{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;border-top:1px solid var(--line);font-size:13px;color:var(--mute)}
+.pager{display:flex;align-items:center;gap:8px}
+.pager .btn{height:34px;padding:0 12px}
+
+/* dialog */
+dialog{border:0;border-radius:16px;padding:0;width:calc(100% - 24px);max-width:600px;box-shadow:0 20px 60px rgba(0,0,0,.25);color:var(--ink)}
+dialog::backdrop{background:rgba(20,28,24,.45)}
+.dlg-h{padding:20px 24px 0}
+.dlg-h h2{font-size:19px;letter-spacing:-.01em}
+.dlg-h p{font-size:13px;color:var(--mute);margin-top:4px}
+.dlg-b{padding:18px 24px 6px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.dlg-b .full{grid-column:1/-1}
+.dlg-f{display:flex;align-items:center;gap:10px;justify-content:flex-end;padding:14px 24px 20px}
+.dlg-f .err{flex:1;text-align:left}
+.hint{font-size:12.5px;color:var(--mute);margin-top:6px}
+
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:10px;font-size:14px;max-width:calc(100% - 32px);z-index:50;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+.toast.bad{background:var(--bad)}
+.print-only{display:none}
+
+@media (max-width:760px){
+  main{padding:16px 14px}
+  .top{padding:12px 14px}
+  .stats{grid-template-columns:repeat(2,1fr);gap:10px}
+  .dlg-b{grid-template-columns:1fr}
+  .toolbar select{flex:1 1 140px}
+}
+@media print{
+  body{background:#fff;font-size:11px}
+  .no-print{display:none!important}
+  .print-only{display:block;margin-bottom:10px}
+  .print-only h2{font-size:16px} .print-only p{color:#444}
+  main{padding:0;max-width:none}
+  .stats{display:none}
+  .card{border:0;border-radius:0}
+  table{min-width:0} th,td{padding:5px 6px}
+  td small{max-width:none}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<section id="loginView" class="login" hidden>
+  <form id="loginForm" class="login-card">
+    <div class="mark" aria-hidden="true">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
+    </div>
+    <p class="eyebrow" id="schoolLogin">&nbsp;</p>
+    <h1>Inventaris Barang</h1>
+    <label for="pw">Kata sandi admin</label>
+    <input id="pw" type="password" autocomplete="current-password" required>
+    <p class="err" id="loginErr" role="alert"></p>
+    <button class="btn primary block" id="loginBtn" type="submit">Masuk</button>
+  </form>
+</section>
+
+<!-- APLIKASI -->
+<div id="appView" hidden>
+  <header class="top no-print">
+    <div class="brand">
+      <div class="mark sm" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>
+      </div>
+      <div><b id="schoolName"></b><span>Inventaris Barang</span></div>
+    </div>
+    <button class="btn ghost" id="logoutBtn" type="button">Keluar</button>
+  </header>
+
+  <main>
+    <div class="print-only"><h2 id="printTitle"></h2><p id="printDate"></p></div>
+    <section class="stats" id="stats"></section>
+
+    <section class="toolbar no-print">
+      <input id="q" type="search" placeholder="Cari kode, nama, merek, lokasi…" aria-label="Cari">
+      <select id="fKondisi" aria-label="Filter kondisi">
+        <option value="">Semua kondisi</option>
+        <option>Baik</option><option>Rusak Ringan</option><option>Rusak Berat</option>
+      </select>
+      <select id="fKategori" aria-label="Filter kategori"></select>
+      <select id="fSort" aria-label="Urutan">
+        <option value="desc">Terbaru dulu</option>
+        <option value="asc">Terlama dulu</option>
+      </select>
+      <span class="spacer"></span>
+      <button class="btn" id="btnCsv" type="button">Ekspor CSV</button>
+      <button class="btn" id="btnPrint" type="button">Cetak</button>
+      <button class="btn primary" id="btnAdd" type="button">+ Tambah Barang</button>
+    </section>
+
+    <section class="card">
+      <div class="tablewrap">
+        <table>
+          <thead><tr>
+            <th>Kode</th><th>Nama Barang</th><th>Kategori</th><th>Merek / Spesifikasi</th><th>Lokasi</th>
+            <th>Kondisi</th><th class="num">Harga (Rp)</th><th>Tgl Input</th><th class="no-print"></th>
+          </tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="empty" hidden></div>
+      <div class="tfoot">
+        <span id="sum"></span>
+        <div class="pager no-print">
+          <button class="btn" id="prev" type="button">‹</button>
+          <span id="pageInfo"></span>
+          <button class="btn" id="next" type="button">›</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- DIALOG TAMBAH / UBAH -->
+<dialog id="formDlg">
+  <form id="itemForm" autocomplete="off">
+    <div class="dlg-h">
+      <h2 id="fTitle">Tambah Barang</h2>
+      <p id="kodeInfo" class="mono"></p>
+    </div>
+    <div class="dlg-b">
+      <div class="full"><label for="f_nama">Nama barang *</label><input id="f_nama" name="nama" required maxlength="120"></div>
+      <div><label for="f_tanggal">Tanggal input *</label><input id="f_tanggal" name="tanggal" type="date" required></div>
+      <div id="rowJumlah"><label for="f_jumlah">Jumlah unit</label><input id="f_jumlah" name="jumlah" type="number" min="1" max="200" step="1" value="1"></div>
+      <div><label for="f_kategori">Kategori</label><input id="f_kategori" name="kategori" list="dlKategori" maxlength="60" placeholder="mis. Meja"><datalist id="dlKategori"></datalist></div>
+      <div><label for="f_merek">Merek / spesifikasi</label><input id="f_merek" name="merek" maxlength="120"></div>
+      <div><label for="f_sumber">Sumber dana</label><input id="f_sumber" name="sumber" list="dlSumber" maxlength="60"><datalist id="dlSumber"><option>BOS</option><option>Hibah</option><option>APBD / Pemda</option><option>Swadaya</option><option>Lainnya</option></datalist></div>
+      <div><label for="f_harga">Harga satuan (Rp)</label><input id="f_harga" name="harga" type="number" min="0" step="1" inputmode="numeric"></div>
+      <div><label for="f_kondisi">Kondisi</label><select id="f_kondisi" name="kondisi"><option>Baik</option><option>Rusak Ringan</option><option>Rusak Berat</option></select></div>
+      <div class="full"><label for="f_lokasi">Lokasi / ruangan</label><input id="f_lokasi" name="lokasi" maxlength="80" placeholder="mis. Ruang Kelas 3"></div>
+      <div class="full"><label for="f_ket">Keterangan</label><textarea id="f_ket" name="keterangan" maxlength="300"></textarea></div>
+    </div>
+    <div class="dlg-f">
+      <p class="err" id="formErr" role="alert"></p>
+      <button class="btn" type="button" id="cancelBtn">Batal</button>
+      <button class="btn primary" type="submit" id="saveBtn">Simpan</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- DIALOG HAPUS -->
+<dialog id="delDlg">
+  <div class="dlg-h"><h2>Hapus barang?</h2><p id="delText" class="mono"></p></div>
+  <div class="dlg-b" style="grid-template-columns:1fr"><p>Data yang dihapus tidak bisa dikembalikan, dan nomor kodenya tidak dipakai ulang.</p></div>
+  <div class="dlg-f">
+    <button class="btn" id="delNo" type="button">Batal</button>
+    <button class="btn danger" id="delOk" type="button">Hapus</button>
+  </div>
+</dialog>
+
+<script>
+(() => {
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const rupiah = (n) => new Intl.NumberFormat('id-ID').format(n || 0);
+const tgl = (s) => (s ? s.split('-').reverse().join('/') : '');
+const pad = (n) => String(n).padStart(2, '0');
+const todayStr = () => { const d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); };
+const KEY = 'inv_token';
+const store = {
+  get() { try { return localStorage.getItem(KEY) || ''; } catch { return ''; } },
+  set(v) { try { localStorage.setItem(KEY, v); } catch {} },
+  del() { try { localStorage.removeItem(KEY); } catch {} },
+};
+const DEF_KATEGORI = ['Meja', 'Kursi', 'Lemari', 'Elektronik', 'Alat Peraga', 'Buku & Perpustakaan', 'Alat Olahraga', 'Alat Kebersihan', 'Lainnya'];
+const BADGE = { 'Baik': 'ok', 'Rusak Ringan': 'warn', 'Rusak Berat': 'bad' };
+const PER = 25;
+
+let token = store.get();
+let cfg = { school: 'Sekolah', prefix: 'BTG/INV' };
+let items = [];
+let editing = null;
+let delItem = null;
+let printing = false;
+const state = { q: '', kondisi: '', kategori: '', sort: 'desc', page: 1 };
+
+/* ---------- API ---------- */
+async function api(path, opts = {}) {
+  const res = await fetch(path, {
+    ...opts,
+    headers: { 'Content-Type': 'application/json', ...(token ? { Authorization: 'Bearer ' + token } : {}) },
+  });
+  let data = null;
+  try { data = await res.json(); } catch {}
+  if (res.status === 401 && path !== '/api/login') { logout(true); throw new Error((data && data.error) || 'Sesi berakhir'); }
+  if (!res.ok) throw new Error((data && data.error) || 'Gagal (' + res.status + ')');
+  return data;
+}
+
+/* ---------- Tampilan ---------- */
+function showLogin(msg) {
+  $('#appView').hidden = true; $('#loginView').hidden = false;
+  $('#loginErr').textContent = msg || ''; $('#pw').value = ''; $('#pw').focus();
+}
+function showApp() { $('#loginView').hidden = true; $('#appView').hidden = false; }
+function logout(expired) {
+  token = ''; store.del(); items = [];
+  showLogin(expired ? 'Sesi berakhir, silakan masuk lagi.' : '');
+}
+let toastTimer;
+function toast(msg, bad) {
+  document.querySelectorAll('.toast').forEach((t) => t.remove());
+  const t = document.createElement('div');
+  t.className = 'toast' + (bad ? ' bad' : ''); t.textContent = msg; t.setAttribute('role', 'status');
+  document.body.appendChild(t);
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.remove(), bad ? 5000 : 3500);
+}
+
+function filtered() {
+  const q = state.q.trim().toLowerCase();
+  const r = items.filter((i) =>
+    (!state.kondisi || i.kondisi === state.kondisi) &&
+    (!state.kategori || i.kategori === state.kategori) &&
+    (!q || [i.kode, i.nama, i.kategori, i.merek, i.sumber, i.lokasi, i.keterangan].join(' ').toLowerCase().includes(q)));
+  const d = state.sort === 'desc' ? -1 : 1;
+  r.sort((a, b) => d * (Number(a.tahun) - Number(b.tahun)) || d * (a.no - b.no) || (a.unit - b.unit));
+  return r;
+}
+
+function kategoriList() {
+  return [...new Set([...DEF_KATEGORI, ...items.map((i) => i.kategori).filter(Boolean)])].sort((a, b) => a.localeCompare(b, 'id'));
+}
+
+function renderStats() {
+  const c = { 'Baik': 0, 'Rusak Ringan': 0, 'Rusak Berat': 0 };
+  items.forEach((i) => { c[i.kondisi] = (c[i.kondisi] || 0) + 1; });
+  $('#stats').innerHTML = [
+    ['Total unit', items.length, ''], ['Kondisi baik', c['Baik'], 'ok'],
+    ['Rusak ringan', c['Rusak Ringan'], 'warn'], ['Rusak berat', c['Rusak Berat'], 'bad'],
+  ].map(([l, v, k]) => `<div class="stat ${k}"><span>${l}</span><b>${rupiah(v)}</b></div>`).join('');
+}
+
+function renderKategori() {
+  const used = [...new Set(items.map((i) => i.kategori).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'id'));
+  if (state.kategori && !used.includes(state.kategori)) state.kategori = '';
+  $('#fKategori').innerHTML = '<option value="">Semua kategori</option>' +
+    used.map((k) => `<option${k === state.kategori ? ' selected' : ''}>${esc(k)}</option>`).join('');
+  $('#dlKategori').innerHTML = kategoriList().map((k) => `<option value="${esc(k)}"></option>`).join('');
+}
+
+function rowHtml(i) {
+  const k = esc(i.kode);
+  return `<tr>
+    <td class="kode">${k}</td>
+    <td><b>${esc(i.nama)}</b>${i.keterangan ? `<small>${esc(i.keterangan)}</small>` : ''}</td>
+    <td>${esc(i.kategori)}</td>
+    <td>${esc(i.merek) || '—'}</td>
+    <td>${esc(i.lokasi) || '—'}</td>
+    <td><span class="badge ${BADGE[i.kondisi] || ''}">${esc(i.kondisi)}</span></td>
+    <td class="num">${i.harga ? rupiah(i.harga) : '—'}</td>
+    <td>${tgl(i.tanggal)}</td>
+    <td class="act no-print"><button class="link" data-act="edit" data-kode="${k}">Ubah</button><button class="link danger" data-act="del" data-kode="${k}">Hapus</button></td>
+  </tr>`;
+}
+
+function render() {
+  renderStats(); renderKategori();
+  const rows = filtered();
+  const pages = printing ? 1 : Math.max(1, Math.ceil(rows.length / PER));
+  if (state.page > pages) state.page = pages;
+  const slice = printing ? rows : rows.slice((state.page - 1) * PER, state.page * PER);
+  $('#tbody').innerHTML = slice.map(rowHtml).join('');
+
+  const empty = $('#empty');
+  empty.hidden = rows.length > 0;
+  if (!rows.length) empty.textContent = items.length ? 'Tidak ada barang yang cocok dengan pencarian.' : 'Belum ada barang. Klik “+ Tambah Barang” untuk mulai mencatat.';
+
+  const total = rows.reduce((s, i) => s + (i.harga || 0), 0);
+  $('#sum').textContent = `${rows.length} unit · total nilai Rp ${rupiah(total)}`;
+  $('#pageInfo').textContent = `Hal ${state.page} / ${pages}`;
+  $('#prev').disabled = state.page <= 1; $('#next').disabled = state.page >= pages;
+}
+
+async function loadItems() {
+  const empty = $('#empty');
+  empty.hidden = false; empty.textContent = 'Memuat data…';
+  try {
+    const r = await api('/api/items');
+    items = r.items || [];
+    render();
+  } catch (e) {
+    empty.hidden = false; empty.textContent = 'Gagal memuat data: ' + e.message;
+    throw e;
+  }
+}
+
+/* ---------- Form tambah / ubah ---------- */
+const dlg = $('#formDlg'), form = $('#itemForm');
+
+function updateKodeInfo() {
+  if (editing) { $('#kodeInfo').textContent = editing.kode; return; }
+  const t = form.elements.tanggal.value;
+  const yy = /^\d{4}-/.test(t) ? t.slice(2, 4) : '--';
+  $('#kodeInfo').textContent = `${cfg.prefix}/${yy}/nnnn-n · nomor dilanjutkan otomatis`;
+}
+
+function openForm(item) {
+  editing = item || null;
+  form.reset();
+  $('#fTitle').textContent = item ? 'Ubah Barang' : 'Tambah Barang';
+  $('#rowJumlah').hidden = !!item;
+  form.elements.tanggal.disabled = !!item;
+  if (item) {
+    for (const k of ['nama', 'kategori', 'merek', 'sumber', 'harga', 'kondisi', 'lokasi', 'tanggal', 'keterangan']) {
+      form.elements[k].value = item[k] ?? '';
+    }
+  } else {
+    form.elements.tanggal.value = todayStr();
+    form.elements.jumlah.value = 1;
+    form.elements.kondisi.value = 'Baik';
+  }
+  updateKodeInfo();
+  $('#formErr').textContent = '';
+  dlg.showModal();
+  form.elements.nama.focus();
+}
+
+form.elements.tanggal.addEventListener('input', updateKodeInfo);
+$('#cancelBtn').onclick = () => dlg.close();
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = $('#saveBtn');
+  btn.disabled = true; $('#formErr').textContent = '';
+  try {
+    const body = JSON.stringify(Object.fromEntries(new FormData(form)));
+    if (editing) {
+      const r = await api('/api/items?kode=' + encodeURIComponent(editing.kode), { method: 'PUT', body });
+      items = items.map((i) => (i.kode === r.item.kode ? r.item : i));
+      toast('Perubahan disimpan');
+    } else {
+      const r = await api('/api/items', { method: 'POST', body });
+      items = items.concat(r.items);
+      const a = r.items[0].kode, b = r.items[r.items.length - 1].kode;
+      toast(r.items.length > 1 ? `${r.items.length} unit ditambahkan: ${a} s.d. ${b}` : `Ditambahkan: ${a}`);
+    }
+    dlg.close(); render();
+  } catch (err) {
+    $('#formErr').textContent = err.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+/* ---------- Hapus ---------- */
+$('#delNo').onclick = () => $('#delDlg').close();
+$('#delOk').onclick = async () => {
+  const btn = $('#delOk'); btn.disabled = true;
+  try {
+    await api('/api/items?kode=' + encodeURIComponent(delItem.kode), { method: 'DELETE' });
+    items = items.filter((i) => i.kode !== delItem.kode);
+    $('#delDlg').close(); toast('Barang dihapus'); render();
+  } catch (e) {
+    $('#delDlg').close(); toast(e.message, true);
+  } finally { btn.disabled = false; }
+};
+
+[dlg, $('#delDlg')].forEach((d) => d.addEventListener('click', (e) => { if (e.target === d) d.close(); }));
+
+$('#tbody').addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-act]');
+  if (!b) return;
+  const item = items.find((i) => i.kode === b.dataset.kode);
+  if (!item) return;
+  if (b.dataset.act === 'edit') openForm(item);
+  else { delItem = item; $('#delText').textContent = `${item.kode} — ${item.nama}`; $('#delDlg').showModal(); }
+});
+
+/* ---------- Filter, ekspor, cetak ---------- */
+$('#q').addEventListener('input', (e) => { state.q = e.target.value; state.page = 1; render(); });
+$('#fKondisi').addEventListener('change', (e) => { state.kondisi = e.target.value; state.page = 1; render(); });
+$('#fKategori').addEventListener('change', (e) => { state.kategori = e.target.value; state.page = 1; render(); });
+$('#fSort').addEventListener('change', (e) => { state.sort = e.target.value; state.page = 1; render(); });
+$('#prev').onclick = () => { state.page--; render(); };
+$('#next').onclick = () => { state.page++; render(); };
+$('#btnAdd').onclick = () => openForm(null);
+
+$('#btnCsv').onclick = () => {
+  const rows = filtered();
+  if (!rows.length) return toast('Tidak ada data untuk diekspor', true);
+  const cell = (v) => '"' + String(v ?? '').replace(/"/g, '""') + '"';
+  const head = ['Kode', 'Nama Barang', 'Kategori', 'Merek/Spesifikasi', 'Sumber Dana', 'Harga Satuan', 'Kondisi', 'Lokasi', 'Tanggal Input', 'Keterangan'];
+  const lines = [head.map(cell).join(';')].concat(rows.map((i) =>
+    [i.kode, i.nama, i.kategori, i.merek, i.sumber, i.harga, i.kondisi, i.lokasi, tgl(i.tanggal), i.keterangan].map(cell).join(';')));
+  const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = `inventaris-${todayStr()}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+};
+
+$('#btnPrint').onclick = () => { printing = true; render(); window.print(); };
+window.addEventListener('afterprint', () => { if (printing) { printing = false; render(); } });
+
+/* ---------- Login / keluar ---------- */
+$('#logoutBtn').onclick = () => logout(false);
+$('#loginForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const btn = $('#loginBtn'); btn.disabled = true; $('#loginErr').textContent = '';
+  try {
+    const r = await api('/api/login', { method: 'POST', body: JSON.stringify({ password: $('#pw').value }) });
+    token = r.token; store.set(token);
+    showApp();
+    await loadItems();
+  } catch (err) {
+    if (!token) $('#loginErr').textContent = err.message; else toast(err.message, true);
+  } finally { btn.disabled = false; }
+});
+
+/* ---------- Mulai ---------- */
+(async function init() {
+  try { const r = await fetch('/api/config'); if (r.ok) cfg = await r.json(); } catch {}
+  $('#schoolName').textContent = cfg.school; $('#schoolLogin').textContent = cfg.school;
+  $('#printTitle').textContent = 'Daftar Inventaris Barang — ' + cfg.school;
+  $('#printDate').textContent = 'Dicetak ' + tgl(todayStr());
+  document.title = 'Inventaris — ' + cfg.school;
+  if (token) {
+    showApp();
+    try { await loadItems(); } catch (e) { if (token) toast(e.message, true); }
+  } else showLogin();
+})();
+})();
+</script>
+</body>
+</html>
